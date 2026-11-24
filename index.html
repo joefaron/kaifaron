@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Kai Faron · photos &amp; random stuff</title>
+<meta name="description" content="Kai Faron's art portfolio: photos and random stuff.">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header>
+  <h1>Kai Faron</h1>
+  <p class="tag">photos &amp; random stuff</p>
+</header>
+
+<main id="gallery"></main>
+
+<div id="lightbox" hidden>
+  <button class="close" aria-label="Close">&times;</button>
+  <button class="prev" aria-label="Previous">&#8249;</button>
+  <figure><img alt=""><figcaption></figcaption></figure>
+  <button class="next" aria-label="Next">&#8250;</button>
+</div>
+
+<footer>&copy; <span id="yr"></span> Kai Faron</footer>
+
+<script>
+// To add a photo: put big + "-sm" copies in photos/, then add a line to photos.json.
+const gallery = document.getElementById('gallery');
+const box = document.getElementById('lightbox');
+const img = box.querySelector('img');
+const cap = box.querySelector('figcaption');
+let photos = [], at = 0;
+
+fetch('photos.json').then(r => r.json()).then(list => {
+  photos = list;
+  list.forEach((p, i) => {
+    const a = document.createElement('a');
+    a.href = 'photos/' + p.file + '.jpg';
+    a.className = 'tile';
+    a.innerHTML = `<img src="photos/${p.file}-sm.jpg" alt="${p.title}" loading="lazy"><span>${p.title}</span>`;
+    a.onclick = e => { e.preventDefault(); show(i); };
+    gallery.appendChild(a);
+  });
+});
+
+function show(i) {
+  at = (i + photos.length) % photos.length;
+  const p = photos[at];
+  img.src = 'photos/' + p.file + '.jpg';
+  img.alt = p.title;
+  cap.innerHTML = `<b>${p.title}</b>${p.note ? ' &middot; ' + p.note : ''}`;
+  box.hidden = false;
+}
+box.querySelector('.close').onclick = () => box.hidden = true;
+box.querySelector('.prev').onclick = e => { e.stopPropagation(); show(at - 1); };
+box.querySelector('.next').onclick = e => { e.stopPropagation(); show(at + 1); };
+box.onclick = e => { if (e.target === box) box.hidden = true; };
+document.onkeydown = e => {
+  if (box.hidden) return;
+  if (e.key === 'Escape') box.hidden = true;
+  if (e.key === 'ArrowLeft') show(at - 1);
+  if (e.key === 'ArrowRight') show(at + 1);
+};
+document.getElementById('yr').textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
